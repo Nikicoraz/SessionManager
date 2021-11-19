@@ -1,5 +1,5 @@
 
-let li = [];
+let li = {};
 let currentElement;
 
 // The 3 main buttons
@@ -11,99 +11,81 @@ const deleteBtn = document.getElementById("delete-btn");
 const sessionsUl = document.getElementById("sessions-ul");
 
 function saveToLocalStorage(){
-    let toSave = []
-    li.forEach(element =>{
-        toSave.push(element.textContent);
-    });
-
-    localStorage.setItem("session-list", JSON.stringify(toSave));
+    localStorage.setItem("session-list", JSON.stringify(li));
 }
 
 function getFromLocalStorage(){
     const parsed = JSON.parse(localStorage.getItem("session-list"));
-    let toReturn = []
-    for(let i = 0; i < Object.keys(a).length; i++){
-        let key1 = Object.keys(a)[i];
-
-        const temp = document.createElement("li");
-        temp.appendChild(document.createTextNode(key1));
-        sessionsUl.appendChild(temp);
-
-        a[key1].forEach(elem =>{
-            let key2 = Object.keys(elem)[0]; 
-            elem[key2].forEach(element =>{
-                console.log(`${key1}: ${key2}: ${element}`);
-            })
-    });
-}
     if(parsed){
-        parsed.forEach(element => {
-            const temp = document.createElement("li");
-            temp.appendChild(document.createTextNode(element));
-            sessionsUl.appendChild(temp);
-            toReturn.push(temp);
-        });
-        li = toReturn;
-        styleUl();
-    } 
+        console.log("Parsed: " + JSON.stringify(parsed));
+        return parsed
+    }else{
+        return {}
+    }
 }
 
 
 
 // Bottone save
 saveBtn.addEventListener("click", () => {
-    // let a = prompt("Session name: ");
-    // const newLi = document.createElement("li");
-    // newLi.appendChild(document.createTextNode(a));
-    // sessionsUl.appendChild(newLi);
-    // li.push(newLi);
-    // styleUl();
-    // saveToLocalStorage();
-    browser.windows.getAll({populate: true}).then(saveTabs, console.error);
-    
+    let name = prompt("Session name: ");
+    if(name == ""){
+        alert("Must enter a name!");
+        return;
+    }
+    li[name] = []
+    // Sistema array tabs perche ha lunghezza 0? JSON AAAAAAAAAAAAA
+    browser.windows.getAll({populate: true}).then((windows) =>{
+        for(let i = 0; i < windows.length; i++){
+            let finestre = new Object();
+            tabs = []
+            windows[i].tabs.forEach(element =>{
+                tabs.push(element.url);
+            });
+            finestre[i.toString()] = tabs;
+            li[name].push(finestre);
+        }
+        styleUl();
+        console.log(JSON.stringify(li));
+        saveToLocalStorage();
+    }, console.error);
+
 });
 
 // Button delete
 deleteBtn.addEventListener("dblclick", () => {
-    li.splice(li.indexOf(currentElement), 1);
+
+    delete li[currentElement.textContent]
     currentElement.remove();
     saveToLocalStorage();
 });
 
 function styleUl(){
-    li.forEach(element => {
-        element.addEventListener("click", ()=>{
-            if(currentElement != null && currentElement != element){
+    sessionsUl.innerHTML = "";
+
+    for(let i = 0; i < Object.keys(li).length; i++){
+        let key1 = Object.keys(li)[i];
+
+        const temp = document.createElement("li");
+        temp.appendChild(document.createTextNode(key1));
+        sessionsUl.appendChild(temp);
+
+        temp.addEventListener("click", () =>{
+            // Da implementare l'apritura delle pagine (possibilmente con funzione) nel bottone restore con current element
+            if(currentElement != null && currentElement != temp){
                 currentElement.style.backgroundColor = "";
                 currentElement.style.border = "";
             }
-            element.style.backgroundColor = "#b5e1ff";
-            element.style.border = "1px solid #74c7ff";
-            currentElement = element;
+            temp.style.backgroundColor = "#b5e1ff";
+            temp.style.border = "1px solid #74c7ff";
+            currentElement = temp;
         })
-    });
+    }
 }
 
 // Codice init
-getFromLocalStorage();
-
-function saveTabs(windows) {
-    // const newLi = document.createElement("li");
-    // let a = "";
-    // let i = 1;
-    //
-    // windows.forEach(element => {
-    //     element.tabs.forEach(tab => {
-    //         a += `${i}: ${tab.url}\n`;
-    //     })
-    //     i++;
-    // });
-    // newLi.appendChild(document.createTextNode(a));
-    // sessionsUl.appendChild(newLi);
-    // li.push(newLi);
-    // styleUl();
-}
-
+li = getFromLocalStorage();
+styleUl();
 
 // NELL'ARRAY LI SI SALVANO NOME SESSIONE[WINDOW[TABS]]
 // DAL NOME SESSIONE NEL RENDER SI CREA L'ELEMENTO LIST
