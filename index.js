@@ -24,8 +24,6 @@ function getFromLocalStorage(){
     }
 }
 
-
-
 // Bottone save
 saveBtn.addEventListener("click", () => {
     let name = prompt("Session name: ");
@@ -49,7 +47,6 @@ saveBtn.addEventListener("click", () => {
         console.log(JSON.stringify(li));
         saveToLocalStorage();
     }, console.error);
-
 });
 
 // Button delete
@@ -59,6 +56,30 @@ deleteBtn.addEventListener("dblclick", () => {
     currentElement.remove();
     saveToLocalStorage();
 });
+
+// Restore Button
+restoreBtn.addEventListener("click", () =>{
+    // Per ogni window dentro li
+    // key2 è il nome (o id) della finestra
+    li[currentElement.textContent].forEach(elem =>{
+        let key2 = Object.keys(elem)[0];
+        openWindow(elem[key2])
+    });
+});
+
+function openWindow(URLS){
+    let toRemove = []
+    URLS.forEach(element =>{
+        if(/^(about:).*/g.test(element)){
+            toRemove.push(element);
+        }
+    })
+    toRemove.forEach(elem =>{
+        URLS.splice(URLS.indexOf(elem), 1);
+    })
+    console.log(URLS);
+    browser.windows.create({url:URLS})
+}
 
 function styleUl(){
     sessionsUl.innerHTML = "";
@@ -71,7 +92,6 @@ function styleUl(){
         sessionsUl.appendChild(temp);
 
         temp.addEventListener("click", () =>{
-            // Da implementare l'apritura delle pagine (possibilmente con funzione) nel bottone restore con current element
             if(currentElement != null && currentElement != temp){
                 currentElement.style.backgroundColor = "";
                 currentElement.style.border = "";
@@ -86,6 +106,7 @@ function styleUl(){
 // Codice init
 li = getFromLocalStorage();
 styleUl();
+
 
 // NELL'ARRAY LI SI SALVANO NOME SESSIONE[WINDOW[TABS]]
 // DAL NOME SESSIONE NEL RENDER SI CREA L'ELEMENTO LIST
