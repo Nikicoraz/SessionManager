@@ -4,6 +4,7 @@ let currentElement;
 
 // The 3 main buttons
 const saveBtn = document.getElementById("save-btn");
+const saveWindowsBtn = document.getElementById("save-window-btn");
 const restoreBtn = document.getElementById("restore-btn");
 const deleteBtn = document.getElementById("delete-btn");
 
@@ -24,13 +25,38 @@ function getFromLocalStorage(){
     }
 }
 
-// Bottone save
-saveBtn.addEventListener("click", () => {
+// Bottone save window
+saveWindowsBtn.addEventListener("click", () => {
     let name = prompt("Session name: ");
-    if(name == ""){
+    if(name == "" || name == null){
         alert("Must enter a name!");
         return;
     }
+    console.log(name);
+    li[name] = []
+    // Sistema array tabs perche ha lunghezza 0? JSON AAAAAAAAAAAAA
+    browser.windows.getCurrent({populate: true}).then((_window) =>{
+        let finestre = new Object();
+        tabs = []
+        _window.tabs.forEach(element =>{
+            tabs.push(element.url);
+        });
+        finestre["0"] = tabs;
+        li[name].push(finestre);
+        styleUl();
+        saveToLocalStorage();
+    }, console.error);
+});
+
+
+// Bottone save all
+saveBtn.addEventListener("click", () => {
+    let name = prompt("Session name: ");
+    if(name == "" || name == null){
+        alert("Must enter a name!");
+        return;
+    }
+    console.log(name);
     li[name] = []
     // Sistema array tabs perche ha lunghezza 0? JSON AAAAAAAAAAAAA
     browser.windows.getAll({populate: true}).then((windows) =>{
